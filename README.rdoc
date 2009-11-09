@@ -1,9 +1,32 @@
 = relaxed-job
 
-Relaxed Job
+A job system based in CouchDB
+
+== Installation
+
+ # From Gemcutter
+ gem install relaxed-job
+
+== Usage
+
+ # Rakefile
+ require 'relaxed_job/tasks'
+
+ # queue a job
+ queue = RelaxedJob::Queue.new('http://localhost:5984/relaxed_job')
+ queue.enqueue my_object_that_responds_to_perform
+
+ # queue with a different method
+ queue.enqueue_with_method my_object, :do_work
+
+ # queue with arguments
+ queue.enqueue_with_method my_object, :do_work_with_args, 5, 7
+
+ # run the worker
+ $ rake jobs:work
 
 == Note on Patches/Pull Requests
- 
+
 * Fork the project.
 * Make your feature addition or bug fix.
 * Add tests for it. This is important so I don't break it in a
