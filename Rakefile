@@ -8,7 +8,7 @@ begin
   require 'jeweler'
   Jeweler::Tasks.new do |gem|
     gem.name = "relaxed-job"
-    gem.summary = %Q{Relaxed Job}
+    gem.summary = %Q{A job system based in CouchDB}
     gem.description = gem.summary
     gem.email = "<ddollar@gmail.com>"
     gem.homepage = "http://github.com/ddollar/relaxed-job"
