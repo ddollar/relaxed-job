@@ -5,7 +5,7 @@
 
 Gem::Specification.new do |s|
   s.name = %q{relaxed-job}
-  s.version = "0.0.0"
+  s.version = "1.0.0"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["David Dollar"]
@@ -32,6 +32,7 @@ Gem::Specification.new do |s|
      "lib/relaxed_job/queue.rb",
      "lib/relaxed_job/tasks.rb",
      "lib/relaxed_job/worker.rb",
+     "relaxed-job.gemspec",
      "spec/rcov.opts",
      "spec/relaxed_job/queue_spec.rb",
      "spec/spec.opts",
