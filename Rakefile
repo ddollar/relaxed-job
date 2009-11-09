@@ -1,6 +1,9 @@
 require 'rubygems'
 require 'rake'
 
+$:.unshift(File.join(File.dirname(__FILE__), 'lib'))
+require 'relaxed_job/tasks'
+
 begin
   require 'jeweler'
   Jeweler::Tasks.new do |gem|
