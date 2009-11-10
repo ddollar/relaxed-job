@@ -18,18 +18,20 @@ class RelaxedJob::Worker
     "testname"
   end
 
-  def start
+  def start(options={})
     say "*** Starting job worker #{queue.worker_name}"
 
     trap('TERM') { say 'Exiting...'; $exit = true }
     trap('INT')  { say 'Exiting...'; $exit = true }
+
+    sleep_for = options[:sleep] || DEFAULT_SLEEP
 
     loop do
       result = nil
 
       realtime = Benchmark.realtime do
         result = queue.work
-        sleep 1
+        sleep sleep_for
       end
 
       count = result.values.inject(0) { |a,v| a+v }
@@ -37,7 +39,7 @@ class RelaxedJob::Worker
       break if $exit
 
       if count.zero?
-        sleep(SLEEP)
+        sleep sleep_for
       else
         say "#{count} jobs processed at %.4f j/s, %d failed ..." % [count / realtime, result[:error]]
       end
