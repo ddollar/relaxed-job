@@ -10,6 +10,10 @@ class RelaxedJob::Queue
     @options = options
   end
 
+  def job(id)
+    couchdb.get(id)
+  end
+
   def enqueue(object, *args)
     enqueue_with_method object, :perform, *args
   end
