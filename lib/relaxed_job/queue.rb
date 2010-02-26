@@ -10,8 +10,8 @@ class RelaxedJob::Queue
     @options = options
   end
 
-  def enqueue(object)
-    enqueue_with_method object, :perform
+  def enqueue(object, *args)
+    enqueue_with_method object, :perform, *args
   end
 
   def enqueue_with_method(object, method, *args)
