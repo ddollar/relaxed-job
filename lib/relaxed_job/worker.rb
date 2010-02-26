@@ -4,7 +4,7 @@ require 'relaxed_job'
 
 class RelaxedJob::Worker
 
-  SLEEP = 5
+  DEFAULT_SLEEP = 5
 
   attr_reader :queue
   attr_reader :options
