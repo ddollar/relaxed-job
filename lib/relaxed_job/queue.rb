@@ -49,10 +49,11 @@ class RelaxedJob::Queue
     locked_jobs.each do |job|
       begin
         object = Marshal.load(job['object'])
-        object.send(job['method'], *(job['arguments']))
+        retval = object.send(job['method'], *(job['arguments']))
 
         counts[:complete] += 1
 
+        job['retval']       = retval
         job['state']        = 'complete'
         job['completed_at'] = Time.now.utc
         couchdb.save_doc(job)
