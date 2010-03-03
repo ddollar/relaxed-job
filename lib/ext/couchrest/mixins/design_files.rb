@@ -14,13 +14,16 @@ module CouchRest::Mixins::DesignFiles
 
     Dir.chdir(design_dir) do
       Dir["**/*.js"].each do |design_file|
-        design, design_type, name, algorithm_type = design_file.gsub(/\.js$/, "").split("/")
-        designs[design] ||= {}
-        designs[design][design_type] ||= {}
-        designs[design][design_type][name] ||= {}
-        designs[design][design_type][name][algorithm_type] = File.read(design_file)
+        path  = design_file.split("/")
+        file  = path.pop.gsub(".js", "")
+        path.inject(designs) do |hash, chunk|
+          hash[chunk] ||= {}
+          hash[chunk]
+        end[file] = File.read(design_file)
       end
     end
+
+puts designs.inspect
 
     designs.each do |name, design|
       register_design name, design

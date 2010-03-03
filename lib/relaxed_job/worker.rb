@@ -9,56 +9,52 @@ class RelaxedJob::Worker
   attr_reader :queue
   attr_reader :options
 
-  def initialize(couchrest_url, options={})
-    @queue   = RelaxedJob::Queue.new(couchrest_url)
+  def initialize(couchdb_url, options={})
+    @queue   = RelaxedJob::Queue.new(couchdb_url)
     @options = options
   end
 
-  def name
-    "testname"
-  end
-
   def start(options={})
-    say "*** Starting job worker #{queue.worker_name}"
+    say "*** Starting job worker #{queue.lock_name}"
 
-    trap("TERM") { say "Exiting..."; $exit = true }
-    trap("INT")  { say "Exiting..."; $exit = true }
+    trap("TERM") { unlock_and_exit! }
+    trap("INT")  { unlock_and_exit! }
 
-    sleep_for = options[:sleep] || DEFAULT_SLEEP
+    queue.work self
 
-    loop do
-      result = nil
-
-      realtime = Benchmark.realtime do
-        result = queue.work
-        sleep sleep_for
-      end
-
-      count = result.values.inject(0) { |a,v| a+v }
-
-      break if $exit
-
-      if count.zero?
-        sleep sleep_for
-      else
-        say "#{count} jobs processed at %.4f j/s, %d failed ..." % [count / realtime, result[:error]]
-      end
-
-      break if $exit
-    end
-
-  ensure
-    queue.clear_locks!
+  rescue Exception => ex
+    return if ex.is_a? SystemExit
+    say "Caught Exception: #{ex}"
+    say ex.backtrace
+    unlock_and_exit!
   end
+
+## jobs ######################################################################
+
+  def jobs
+    @jobs ||= {}
+  end
+
+  def job(name, &blk)
+    jobs[name.to_sym] = blk
+  end
+
+  def run(name, args={})
+    name = name.to_sym
+    raise "No such job: #{name}" unless job = jobs[name]
+    job.call(args)
+  end
+
+private ######################################################################
 
   def say(text)
     puts text unless options[:quiet]
   end
 
-private ######################################################################
-
-  def quiet
-    options[:quiet]
+  def unlock_and_exit!
+    puts "Exiting..."
+    queue.clear_locks!
+    exit
   end
 
 end

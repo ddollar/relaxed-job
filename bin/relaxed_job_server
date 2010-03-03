@@ -1,0 +1,19 @@
+#!/usr/bin/env ruby
+
+$:.unshift File.expand_path("../../lib", __FILE__)
+
+require "relaxed_job/worker"
+
+worker = RelaxedJob::Worker.new("http://localhost:5984/rjtest")
+
+worker.job :test1 do |args|
+  puts "[#{worker.queue.lock_name}] [test1] [#{args.inspect}]"
+  sleep 2
+end
+
+worker.job :test2 do |args|
+  puts "[#{worker.queue.lock_name}] [test2] [#{args.inspect}]"
+  sleep 5
+end
+
+worker.start

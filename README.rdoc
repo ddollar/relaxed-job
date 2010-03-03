@@ -1,29 +1,35 @@
 = relaxed-job
 
-A job system based in CouchDB
+A blocking-pop job system in CouchDB
 
 == Installation
 
  # From Gemcutter
  gem install relaxed-job
 
-== Usage
+== Define a Job
 
- # Rakefile
- require 'relaxed_job/tasks'
+ # connect to the queue
+ worker = RelaxedJob::Worker.new("http://localhost:5984/relaxed_job")
 
- # queue a job
- queue = RelaxedJob::Queue.new('http://localhost:5984/relaxed_job')
- queue.enqueue my_object_that_responds_to_perform
+ worker.job :samplejob do |args|
+   raise "Error" unless args[:optional] == "argument"
+   sleep 5
+ end
 
- # queue with a different method
- queue.enqueue_with_method my_object, :do_work
+ # run a generic worker
+ worker.start
 
- # queue with arguments
- queue.enqueue_with_method my_object, :do_work_with_args, 5, 7
+ # or only for certain jobs
+ worker.start :samplejob, :otherjob
 
- # run the worker
- $ rake jobs:work
+== Queue a Job
+
+ # connect to the queue
+ queue = RelaxedJob::Queue.new("http://localhost:5984/relaxed_job")
+
+ # enqueue a job
+ queue.run :samplejob, :optional => "argument"
 
 == Note on Patches/Pull Requests
 

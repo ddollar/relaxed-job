@@ -1,4 +1,5 @@
 require "couchrest"
+require "relaxed_job"
 
 class RelaxedJob::Queue
 
@@ -7,34 +8,27 @@ class RelaxedJob::Queue
 
   def initialize(couchdb_url)
     @couchdb_url = couchdb_url
-    @options = options
+    @options     = options
   end
 
   def job(id)
     couchdb.get(id)
   end
 
-  def enqueue(object, *args)
-    enqueue_with_method object, :perform, *args
-  end
-
-  def enqueue_with_method(object, method, *args)
+  def run(job, args={})
     couchdb.save_doc({
       "class"     => "job",
       "state"     => "pending",
-      "method"    => method.to_s,
-      "arguments" => args.to_a,
-      "object"    => Marshal.dump(object),
+      "name"      => job,
+      "arguments" => args,
       "queued_at" => Time.now.utc
     })
   end
 
-  def lock(count)
-    pending_jobs(count).each do |job|
-      job["state"]     = "locked"
-      job["locked_by"] = worker_name
-      couchdb.save_doc(job)
-    end
+  def lock_name
+    "host:#{Socket.gethostname} pid:#{$$}"
+  rescue
+    "pid:#{$$}"
   end
 
   def clear_locks!
@@ -45,42 +39,47 @@ class RelaxedJob::Queue
     end
   end
 
-  def work(worker_name=worker_name)
-    lock 3
-
-    counts = { :complete => 0, :error => 0 }
-
-    locked_jobs.each do |job|
+  def work(worker)
+    fetch_and_lock do |job|
       begin
-        object = Marshal.load(job["object"])
-        retval = object.send(job["method"], *(job["arguments"]))
+        worker.run job["name"], job["arguments"]
 
-        counts[:complete] += 1
-
-        job["retval"]       = retval
         job["state"]        = "complete"
         job["completed_at"] = Time.now.utc
         couchdb.save_doc(job)
       rescue StandardError => ex
-        counts[:error] += 1
-
         job["state"]      = "error"
-        job["exception"]  = Marshal.dump(ex)
         job["errored_at"] = Time.now.utc
+        job["error"]      = { "message" => ex.message, "backtrace" => ex.backtrace }
         couchdb.save_doc(job)
       end
     end
-
-    counts
-  end
-
-  def worker_name
-    "host:#{Socket.gethostname} pid:#{$$}"
-  rescue
-    "pid:#{$$}"
   end
 
 ## job types #################################################################
+
+  def fetch_and_lock(&block)
+    loop do
+      changes = couchdb.get("_changes",
+        :feed   => "longpoll",
+        :filter => "jobs/pending",
+        :since  => 1
+      )
+
+      lock_job changes["results"].first["id"], &block
+    end
+  end
+
+  def lock_job(id)
+    job = job(id)
+    job["locked_by"] = lock_name
+    job.save
+
+    yield job
+  ensure
+    job.delete("locked_by")
+    job.save
+  end
 
   def completed_jobs
     jobs_by_type(:completed)
@@ -91,11 +90,7 @@ class RelaxedJob::Queue
   end
 
   def locked_jobs
-    jobs_by_type(:locked, :key => worker_name)
-  end
-
-  def pending_jobs(count)
-    jobs_by_type(:pending, :limit => count)
+    jobs_by_type(:locked, :key => lock_name)
   end
 
 private ######################################################################

@@ -1,0 +1,10 @@
+#!/usr/bin/env ruby
+
+$:.unshift File.expand_path("../../lib", __FILE__)
+
+require "relaxed_job/queue"
+
+queue = RelaxedJob::Queue.new("http://localhost:5984/rjtest")
+
+queue.run :test1, :foo => "bar"
+queue.run :test2, :foo => "bar2"
