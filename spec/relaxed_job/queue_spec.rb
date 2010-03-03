@@ -1,4 +1,4 @@
-require File.expand_path(File.dirname(__FILE__) + '/../spec_helper')
+require File.expand_path(File.dirname(__FILE__) + "/../spec_helper")
 
 describe "RelaxedJob::Queue" do
 
@@ -18,7 +18,7 @@ describe "RelaxedJob::Queue" do
     end
 
     it "has the right data in the file" do
-      File.read(@enqueued.filename).should == 'perform'
+      File.read(@enqueued.filename).should == "perform"
     end
 
     it "returns the count of jobs" do
@@ -33,13 +33,13 @@ describe "RelaxedJob::Queue" do
     end
 
     it "has the right data in the file" do
-      File.read(@enqueued.filename).should == 'perform_two'
+      File.read(@enqueued.filename).should == "perform_two"
     end
   end
 
   describe "using enqueue_with_method to call a method with arguments" do
     before(:each) do
-      @queue.enqueue_with_method @enqueued, :perform_args, 'one', 'two'
+      @queue.enqueue_with_method @enqueued, :perform_args, "one", "two"
       @queue.work
     end
 
@@ -50,14 +50,14 @@ describe "RelaxedJob::Queue" do
 
   describe "with an erroring method" do
     before(:each) do
-      @queue.enqueue_with_method @enqueued, :perform_with_error, 'ErrorText'
+      @queue.enqueue_with_method @enqueued, :perform_with_error, "ErrorText"
       @results = @queue.work
     end
 
     it "stores the errored job with its exception" do
       job = @queue.errored_jobs.last
-      exception = Marshal.load(job['exception'])
-      exception.message.should == 'ErrorText'
+      exception = Marshal.load(job["exception"])
+      exception.message.should == "ErrorText"
     end
 
     it "returns the count of jobs" do
@@ -67,7 +67,7 @@ describe "RelaxedJob::Queue" do
 
   describe "with locked jobs" do
     before(:each) do
-      @queue.enqueue_with_method @enqueued, :perform_with_error, 'ErrorText'
+      @queue.enqueue_with_method @enqueued, :perform_with_error, "ErrorText"
       @queue.lock(1)
     end
     

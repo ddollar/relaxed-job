@@ -1,6 +1,6 @@
-require 'benchmark'
-require 'couchrest'
-require 'relaxed_job'
+require "benchmark"
+require "couchrest"
+require "relaxed_job"
 
 class RelaxedJob::Worker
 
@@ -21,8 +21,8 @@ class RelaxedJob::Worker
   def start(options={})
     say "*** Starting job worker #{queue.worker_name}"
 
-    trap('TERM') { say 'Exiting...'; $exit = true }
-    trap('INT')  { say 'Exiting...'; $exit = true }
+    trap("TERM") { say "Exiting..."; $exit = true }
+    trap("INT")  { say "Exiting..."; $exit = true }
 
     sleep_for = options[:sleep] || DEFAULT_SLEEP
 

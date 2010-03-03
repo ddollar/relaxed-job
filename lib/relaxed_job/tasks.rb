@@ -1,7 +1,7 @@
-require 'relaxed_job/worker'
+require "relaxed_job/worker"
 
 def relaxed_job_url
-  ENV['RELAXED_JOB_COUCHDB_URL'] || 'http://localhost:5984/relaxed_job'
+  ENV["RELAXED_JOB_URL"] || "http://localhost:5984/relaxed_job"
 end
 
 namespace :jobs do
