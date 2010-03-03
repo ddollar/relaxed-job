@@ -1,3 +1,5 @@
+require "ext/couchrest"
+
 module RelaxedJob
 
   def self.couchdb(url)
