@@ -20,9 +20,6 @@ A blocking-pop job system in CouchDB
  # run a generic worker
  worker.start
 
- # or only for certain jobs
- worker.start :samplejob, :otherjob
-
 == Queue a Job
 
  # connect to the queue
