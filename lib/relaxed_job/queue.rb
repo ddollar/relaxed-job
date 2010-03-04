@@ -71,12 +71,17 @@ class RelaxedJob::Queue
   end
 
   def lock_job(id)
-    job = job(id)
-    job["locked_by"] = lock_name
-    job.save
+    begin
+      job = job(id)
+      job["state"] = "running"
+      job["locked_by"] = lock_name
+      job.save
+    rescue RestClient::Conflict
+      return
+    end
 
     yield job
-  ensure
+
     job.delete("locked_by")
     job.save
   end
